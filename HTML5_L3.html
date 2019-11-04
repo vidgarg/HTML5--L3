@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>HTML-5 L3</title>
+		<script type="text/javascript" src="./calculate_prime.js"></script>
+		<script type="text/javascript">
+			var w = "undefined";
+			// check if the number is prime
+			function checkPrime(num) {
+				num = Number(num);
+				i = 2;
+				while(i<num/2) {
+					if(num%i === 0)
+						return false;
+					else
+						i = i+1;
+				}
+				return true;
+			}
+
+			// start web worker
+			function start() {
+				if (typeof(Storage) !== "undefined") {
+					var inpNum = document.getElementById("inpNum").value;
+					localStorage.setItem("inpNum", inpNum);
+					if (typeof(Worker) !== "undefined") {
+						if(w == "undefined") {
+							// Instantiating the Worker
+							w = new Worker('calculate_prime.js');
+							// Starting the worker by sending a first message
+    						w.postMessage(inpNum);
+							// Getting ready to handle the message sent back by the worker
+							w.addEventListener("message", function (event) {
+								// Checking if the prime number has been achieved
+								if(checkPrime(event.data)) {
+									document.getElementById("output").innerHTML = "Prime number found "+event.data + "!";
+									w.terminate();
+									w = "undefined";
+								}
+								else
+									document.getElementById("output").innerHTML = event.data;
+							}, false);
+						}
+					} 
+					else {
+					    document.getElementById("output").innerHTML = "Web worker is not supported by your browser!"
+					}
+				} 
+				else {
+					document.getElementById("output").innerHTML = "Web storage is not supported by your browser!"
+				}
+			}
+
+			// stop web worker
+			function end() { 
+			    w.terminate();
+			    w = undefined;
+			}
+		</script>
+	</head>
+	<body>
+		<p>Kindly use <b>Mozilla Firefox</b> as Google Chrome has issues with web workers</p>
+		<label for="inpNum">Enter Number</label>
+		<input type="number" max='100' name="inpNum" id="inpNum">
+		<br>
+		<button type="button" onclick="start()">Start</button>
+		<button type="button" onclick="end()">End</button>
+		<br>
+		<p id="output"></p>
+	</body>
+</html>
